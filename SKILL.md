@@ -1,6 +1,6 @@
 ---
 name: business-interview
-description: Structured block-by-block interview that gives Claude real context about the user's business. Run it on first setup, or whenever context/business.md has gone stale or has [TO FILL IN] placeholders. Triggers on "/business-interview", "run the business interview", "help me set up my context", "you need to understand my business".
+description: Structured block-by-block interview that gives Claude real context about the user's business, in one or several sittings. Ends by writing SUMMARY.md (what Claude learned, problems, roadmap, projects and the tools each one needs) and, in facilitated mode, stops until the user is in the meeting with their facilitator. Triggers on "/business-interview", "run the business interview", "help me set up my context", "you need to understand my business", "let's continue the interview", and on the resume phrase from ONBOARDING.md.
 ---
 
 # Skill: business-interview
@@ -24,7 +24,7 @@ This is the highest-leverage skill in the workspace. Every other skill gets bett
 
 The interview assumes a workspace with a `context/` folder and a `journal/`. In a bare project neither exists, and the skill still has to work.
 
-**Before block 0, look at what is actually there** and pick the mode:
+**Before the framing, look at what is actually there** and pick the mode:
 
 | What you find | Mode |
 |---|---|
@@ -53,6 +53,26 @@ The interview itself never changes. Only where the answers land does.
 - **Do not invent.** If the user does not know a number, write `unknown` in the context file, not a guess.
 - **Estimated time: 15-20 minutes.** Say that up front so they commit.
 - **Check whether the business exists before block 2.** See the fork below. An idea-stage user asked about gross margin will invent one.
+
+---
+
+## Sittings: the interview does not have to happen in one go
+
+Twenty minutes is long for someone doing this between other things. The interview survives being closed and reopened.
+
+- **Log every block as it is answered.** After each block, append the answers, compressed, to the session note `journal/sessions/YYYY-MM-DD-business-interview.md` under `## Answers`, one `### Block N` heading per block. Do this before asking the next block. This is the only place the answers live until the closing sequence writes `context/`.
+- **On a new session, look for that note first.** If it exists and has answers, say which blocks are done, recap the last one in two lines, and continue from the next. Do not start over and do not re-ask what is logged.
+- **The note keeps its original date** even when the interview spans several days. Later sittings add `Continued YYYY-MM-DD` under Context.
+- **The closing sequence runs once**, when the last block is done, whichever sitting that is.
+
+## Facilitated mode
+
+`ONBOARDING.md` has a `## Mode` block. When it says `facilitated: yes`, someone (the facilitator) will sit with the user later, in a meeting, for the second half of the setup. Two things change:
+
+1. **The interview stops after writing `SUMMARY.md`.** No `capability-map`, no `check-setup`, no `setup-mcps`, no "want me to look at your machine?". The user reads the summary and waits. Step 10 of the closing sequence says the exact words.
+2. **The second half starts on the resume phrase**, and the facilitator's goal is that the user does the installing. See **Resume** at the end of this file.
+
+Everything else (blocks, sittings, files) is identical.
 
 ---
 
@@ -103,7 +123,7 @@ Many have never charged and feel like frauds ("it is too easy", "it only took me
 
 ---
 
-## Block 0: Framing (say this first)
+## Framing (say this first, before block 0)
 
 Tell the user, briefly:
 - What you are about to do and roughly how long it takes.
@@ -111,6 +131,15 @@ Tell the user, briefly:
 - That "I don't know" is a valid answer, and vague answers make everything downstream worse.
 
 ---
+
+## Block 0: You
+
+Always the first questions, before anything about the business. Claude works for a person, not for a company: without this block it does not know who it is talking to.
+
+1. What is your name, and how do you like to be called?
+2. Where are you based? City and country, so dates, times and examples fit where you are.
+
+> Use the name from here on. Answers go to `context/profile.md` under `## About you`. Nothing here is mandatory: if they skip a question, write `not shared` and move on, never push.
 
 ## Block 1: The business in one paragraph
 
@@ -191,50 +220,75 @@ Tell the user, briefly:
 
 ## Closing sequence
 
-After the last block:
+After the last block. The order matters: the summary is written before anything is installed, so the user sees what was learned before being asked to pick.
 
-1. **Executive summary.** 15 lines max, bullets. What the business is, who it serves, how it makes money, what is blocking it.
-2. **Top 3 gaps.** Where Claude can add the most value first, ranked, with a one-line reason each.
-3. **Proposed file writes.** Show the user what will be written and where:
+1. **Build the summary in chat first, short.** Ten to fifteen lines: what the business is, who it serves, how it makes money, the blocker. Ask "is this right?" and fix what they correct before writing anything. One round, not a negotiation.
+
+2. **Derive the roadmap and the projects.** From block 7 (goals, urgent problem, constraint), block 2 (in development) and every pain point with a concrete deliverable:
+   - `context/roadmap.md`: one theme for the quarter, three monthly objectives with a measurable result each, the constraint. If no goal was given, propose one and mark it as a proposal.
+   - `context/projects.md`: one entry per project. Goals and anything already moving go under `## Active`; the rest under `## Backlog`, one line each.
+   - **For every project, the tool it needs and the connection that gives Claude that tool.** Tool from block 8, connection from `.claude/skills/setup-mcps/references/mcp-catalog.md`. "Nothing" when context alone is enough. Never name a connector the catalogue does not list. This column is the MCP shopping list, ordered by the project it serves, and it is what `capability-map` and `setup-mcps` read later.
+
+3. **Write `SUMMARY.md`** at the root of the workspace, following `references/summary-template.md` exactly: the nine sections, in that order, in their words, with the "what you did not know" section carrying its evidence. Rewrite it whole if it already exists. This is the document they will open tomorrow, and the facilitator will open in the meeting. Spend the effort here.
+
+4. **Proposed file writes.** Show what will be written and where:
+   - `SUMMARY.md` - the readable version of everything below
    - `context/business.md` - business, product, customer, competition, positioning
-   - `context/profile.md` - working style, language, preferences from block 9
-   - `context/projects.md` - one entry per goal or active piece of work from block 7
+   - `context/profile.md` - who they are from block 0, working style, language, preferences from block 9
+   - `context/projects.md` - the projects from step 2, with their tool and connection
+   - `context/roadmap.md` - the quarter from step 2
    - `context/finances.md` - the numbers from block 5 (only if answered)
-   - `context/roadmap.md` - the 3-month goal
-4. **Ask for confirmation.** Do not write anything before an explicit yes.
-5. **Write the files.** Replace every `[TO FILL IN]` you have an answer for. Leave the rest as `[TO FILL IN]`, do not delete them.
-6. **Update `ONBOARDING.md`** (if the file exists). Check the business interview box, append a dated line to the Log section.
-7. **Activate `clients/` if block 3 question 5 said named clients.** Ask for the current list (name, status, value, where the lead came from, next step), create one folder per client from `clients/_template/client.md`, fill the pipeline table in `clients/README.md`, and add the `clients/` row to the routing table in `CLAUDE.md`. If they said anonymous customers, skip this entirely.
-8. **Create the session note** (only if `journal/` exists). `journal/sessions/YYYY-MM-DD-business-interview.md`, then wikilink it from `journal/mocs/Main MOC.md` under `## Sessions` in the same turn.
-9. **Run `capability-map` immediately, in the same session** (if it is installed; otherwise do the plain version described in the standalone table above). Do not end here and do not send them off to read something.
 
-   This is the payoff for the 20 minutes they just spent. `capability-map` turns the context into a specific list of what Claude can do for their business now, what is one install away, and what is a bigger build. They pick, and it installs the skills (`find-skills`) and connects the tools (`setup-mcps`, scoped to only what the picks need, after `check-setup` passes).
+5. **Ask for confirmation.** Do not write anything before an explicit yes.
 
-   Say it plainly before you run it:
+6. **Write the files.** Replace every `[TO FILL IN]` you have an answer for. Leave the rest as `[TO FILL IN]`, do not delete them: they keep the onboarding reminder on, and the next session asks about them. If the user says one does not apply, write `n/a (confirmed by the user, YYYY-MM-DD)` instead.
 
-   > Now the useful part. Let me show you what I can actually do with what you just told me, and set it up.
+7. **Update `ONBOARDING.md`** (if the file exists). Check the business interview box, append a dated line to the Log section. If that was the last unchecked box and `context/` has no `[TO FILL IN]` left, retire the gate now (STEP 0 in `CLAUDE.md`).
 
-   An interview that ends with "great, now go run /setup-mcps" feels like filling a form. An interview that ends with three working capabilities feels like hiring someone.
+8. **Activate `clients/` if block 3 question 5 said named clients.** Ask for the current list (name, status, value, where the lead came from, next step), create one folder per client from `clients/_template/client.md`, fill the pipeline table in `clients/README.md`, and add the `clients/` row to the routing table in `CLAUDE.md`. If they said anonymous customers, skip the folder and check the Clients folder box in `ONBOARDING.md` as `n/a (no named clients, confirmed by the user, YYYY-MM-DD)`: their answer is the confirmation.
 
-10. **Mention `one-page-marketing-plan` as the natural next session, not now** (only if it is installed). This interview establishes *what the business is*. That one decides *what the marketing should do about it*, by deriving all nine squares of Allan Dib's canvas from the context just written and only asking about the parts nothing answers. It needs the context this interview produces, so it comes after, in its own session - do not chain it onto the end of an already long one.
+9. **Close the session note** (only if `journal/` exists). `journal/sessions/YYYY-MM-DD-business-interview.md` already holds the answers; add Actions, Decisions, Outputs, and make sure it is wikilinked from `journal/mocs/Main MOC.md` under `## Sessions`.
 
-   > Next time, `/one-page-marketing-plan` turns this into an actual plan: nine squares, one page, and one thing to fix first. It works off everything you just told me, so most of it I can fill in myself.
+10. **Then, one of two endings.**
+
+    **Facilitated mode** (`ONBOARDING.md` says `facilitated: yes`): stop here. Append `- Paused: YYYY-MM-DD, interview done, waiting for the meeting with [facilitator]` to the ONBOARDING log. Say, in the user's language and adapting the names:
+
+    > That is it for now. I wrote everything I learned into `SUMMARY.md`, open it and correct anything I got wrong. Do not do anything else here: the rest happens in your meeting with [facilitator]. When you are in it, type **[resume phrase]** and we continue from there, with you at the keyboard.
+
+    Do not run `capability-map`. Do not run `check-setup`. Do not offer anything else. If they ask a normal question afterwards, answer it.
+
+    **Normal mode**: run `capability-map` immediately, in the same session (if it is installed; otherwise do the plain version described in the standalone table above). Do not end here and do not send them off to read something. It reads section 8 of `SUMMARY.md` and turns it into three buckets, then installs what they pick (`find-skills` for skills, `setup-mcps` for connections, after `check-setup` passes). Say it plainly before you run it:
+
+    > Now the useful part. Let me show you what I can actually do with what you just told me, and set it up.
+
+11. **Mention `one-page-marketing-plan` as the natural next session, not now** (only if it is installed, and only in normal mode). It derives Allan Dib's nine squares from the context just written and asks only about what nothing answers. It comes after, in its own session.
+
+---
+
+## Resume (facilitated mode, in the meeting)
+
+Trigger: the user types the resume phrase from `ONBOARDING.md`, or says the same thing in other words ("I am with [facilitator] now", "we are in the meeting", "let's continue"). Confirm in one line that you are resuming and go. The facilitator is next to them; the user has the keyboard and does every click and every command. **The goal of this half is that they leave able to connect a tool without anyone next to them.**
+
+1. **Recap.** Read `SUMMARY.md`. In five lines: who they are, the blocker, the top three projects and what each needs. Ask if anything changed since they wrote it.
+2. **Machine check.** Run `check-setup`. Show the table. Install only what a project in section 8 needs; skip the rest. In a workshop the facilitator's IT contact usually installed everything already, so this is normally a green table and thirty seconds.
+3. **Capability map.** Run `capability-map` from section 8 of `SUMMARY.md`. "Now" is what needs nothing; "one step away" is one connection; "later" is a build. Ask which ones, by number.
+4. **Connect, in teach mode.** Run `setup-mcps` scoped to the picks. For each connection: one line on what it is, the exact steps, they do them, you verify with a real read of their data, and you say out loud what just became possible. Then, before the next one, ask them to describe the steps back in one sentence. The second connection they do with less help than the first. If there is a third, they do it while you only watch.
+5. **Close.** Remove the `Paused:` line from `ONBOARDING.md`, check the boxes that are now done, log the date. Ask about anything still open (a box or a `[TO FILL IN]`) while they are here. If nothing is left open, retire the gate (STEP 0 in `CLAUDE.md`). Write `journal/sessions/YYYY-MM-DD-setup-meeting.md` and link it from the MOC. End with the first project started, not with a summary.
 
 ---
 
 ## Output
 
-- Executive summary in chat
-- Top 3 gaps in chat
+- Summary in chat, then `SUMMARY.md` at the root: what was learned, problems, strengths, weaknesses, known vs not known, roadmap, projects with their tool and connection
 - Written: `context/business.md`, `context/profile.md`, `context/projects.md`, `context/roadmap.md`, `context/finances.md` (as applicable)
-- Written: `journal/sessions/YYYY-MM-DD-business-interview.md` + MOC link-back
+- Written: `journal/sessions/YYYY-MM-DD-business-interview.md` (answers per block, then the close) + MOC link-back
 - Written (only if they have named clients): `clients/{name}/client.md` per client + pipeline table
-- Updated: `ONBOARDING.md`
-- Handed off to `capability-map`, in the same session
+- Updated: `ONBOARDING.md` (box checked; `Paused:` line in facilitated mode)
+- Normal mode: handed off to `capability-map`, in the same session. Facilitated mode: stopped, resumed in the meeting
 
 ## Notes
 
 - No MCPs or APIs needed. This is pure conversation.
-- Related: `capability-map` runs right after it and depends entirely on the quality of what gets written here.
+- Related: `capability-map` runs right after it (or at resume) and depends entirely on the quality of section 8 of `SUMMARY.md`.
 - Never write files without confirmation.
-- Re-running later: ask which blocks changed, run only those, and **merge** into the existing context rather than overwriting it.
+- Re-running later: ask which blocks changed, run only those, **merge** into the existing context rather than overwriting it, and rewrite `SUMMARY.md` whole.
